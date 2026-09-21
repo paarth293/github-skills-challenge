@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 from src.anomaly_detector import AnomalyDetector
 from src.aiops_pipeline import identify_metric_fields, run_pipeline
@@ -148,3 +149,24 @@ def test_consumer_receives_event():
     messages = consumer.consume()
 
     assert len(messages) == 1
+
+
+def test_producer_rejects_empty_event():
+    topic = EventTopic("anomaly-events")
+    producer = EventProducer(topic)
+
+    assert producer.publish(None) is False
+    assert topic.get_messages() == []
+
+
+def test_topic_clear_removes_events():
+    topic = EventTopic("anomaly-events")
+    topic.publish({"type": "ANOMALY"})
+
+    topic.clear()
+
+    assert topic.get_messages() == []
+
+
+def test_pipeline_cli_entry_point_runs():
+    runpy.run_module("src.aiops_pipeline", run_name="__main__")
