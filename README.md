@@ -232,6 +232,8 @@ No validation failures remained before submission.
 
 ## Task 9: Commit and Push Changes
 
+Pull request: [Complete AIOps workflow assessment](https://github.com/DebbieAUG/github-skills-challenge/pull/222)
+
 The modified files were reviewed before submission. Only files related to the assessment were included:
 
 - `README.md`
