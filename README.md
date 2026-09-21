@@ -115,3 +115,62 @@ Events consumed: 2
 The two final anomaly events identified the operational issue at `2026-09-20T10:05:00` and `2026-09-20T10:06:00`. The output included the affected service, timestamp, anomaly type, and detection reasons. This verifies that operational data was processed, abnormal behavior was detected, events were generated and published, the consumer received them, and the downstream AIOps result successfully represented the payment-service timeout and database connection timeout.
 
 The end-to-end test in `tests/test_aiops_pipeline.py` separately verifies event creation, producer publication, topic storage, consumer receipt, and presence in the downstream `events_consumed` result.
+
+## Task 7: Update the README
+
+1. AIOps scenario
+
+This project simulates an AIOps workflow for a payment application service. Operational records are inspected, abnormal service behavior is detected, and anomaly events are sent through a lightweight in-memory event-streaming workflow.
+
+2. Operational data
+
+The file `data/service_data.json` contains 10 records for `payment-service`. Each record includes a timestamp, response time, CPU percentage, memory percentage, log level, and log message. The records cover one-minute intervals from `2026-09-20T10:00:00` to `2026-09-20T10:09:00`.
+
+3. Logs and metrics observations
+
+The metric fields are `response_time_ms`, `cpu_percent`, and `memory_percent`. The log fields are `log_level` and `message`. Records from 10:00 through 10:04 and 10:07 through 10:09 appear normal because they have low and stable metric values with successful `INFO` messages. Records at 10:05 and 10:06 are unusual because response time, CPU, and memory increase and the logs report timeout errors.
+
+4. Anomaly-detection findings
+
+The `AnomalyDetector` identified two anomalies. The 10:05 record was flagged for high response time and an error log. The 10:06 record was flagged for high response time, high CPU utilization, high memory utilization, and an error log. No normal record was incorrectly flagged in the supplied data.
+
+5. Event-processing flow
+
+The workflow is:
+
+`Operational Data -> AnomalyDetector -> Event -> EventProducer -> anomaly-events Topic -> EventConsumer -> AIOps result`
+
+The detector creates an anomaly event, the producer publishes it to the topic, the consumer reads it, and `run_pipeline()` returns the received events in `events_consumed`.
+
+6. Final workflow execution
+
+The final execution produced:
+
+```text
+Records processed: 10
+Anomalies detected: 2
+Events consumed: 2
+```
+
+The final output identified the payment-service timeout at 10:05 and the database connection timeout at 10:06, including the timestamp, anomaly type, and reasons.
+
+7. Issues corrected
+
+The detector originally checked only `WARNING`, so it missed the dataset's `ERROR` log records. It was corrected to detect both `WARNING` and `ERROR`. The producer and consumer originally used different topics, so consumed events were empty. They were corrected to share the same `anomaly-events` topic. The package imports were also made compatible with both tests and direct CLI execution.
+
+8. Limitation and possible improvement
+
+The detector uses fixed thresholds and does not learn a service-specific baseline. A possible improvement is to calculate rolling baselines and detect deviations from recent behavior while continuing to treat severe log levels as anomalies.
+
+9. Steps to reproduce
+
+From the repository root, run:
+
+```bash
+python3 -m pip install -r requirements.txt
+python3 -m pip install pytest-cov coverage
+PYTHONPATH=src python3 src/aiops_pipeline.py
+PYTHONPATH=. python3 -m pytest --cov=src --cov-report=term-missing --cov-fail-under=90 -q
+```
+
+The pipeline command displays the detected anomaly events. The test command runs all tests and verifies at least 90 percent code coverage. The current result is 18 passing tests and 91.89 percent coverage.
