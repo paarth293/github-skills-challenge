@@ -50,3 +50,16 @@ Both expected unusual observations were detected. No normal observation was inco
 ### Limitation and possible improvement
 
 The detector uses fixed thresholds and does not learn a service-specific baseline. A possible improvement would be to calculate rolling baselines and detect deviations relative to recent behavior, while retaining explicit checks for severe log levels.
+
+## Task 4: Verify the AIOps Event Flow
+The complete anomaly-event flow was verified:
+1. Anomaly detector: examines each operational record and creates an event when a metric threshold or concerning log level is found.
+2. Producer: receives the event from the detector and publishes it.
+3. Topic: stores the published event in the in-memory anomaly-events topic.
+4. Consumer: reads the event from the same topic.
+5. Event/message: contains the timestamp, service, anomaly type, reasons, and original source record.
+6. Downstream AIOps result: the consumed events are returned by run_pipeline() in events_consumed, where the report displays their timestamps and reasons.
+
+### Execution result
+
+Running `PYTHONPATH=src python3 src/aiops_pipeline.py` processed all 10 records, detected 2 anomalies, and consumed 2 events. The events at `2026-09-20T10:05:00` and `2026-09-20T10:06:00` travelled through the detector, producer, topic, and consumer and were present in the downstream pipeline result with their detection reasons.

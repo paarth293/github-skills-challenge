@@ -84,6 +84,42 @@ def test_pipeline_consumes_detected_anomalies():
     assert all(event["reasons"] for event in result["events_consumed"])
 
 
+def test_anomaly_event_travels_through_complete_flow():
+    record = {
+        "timestamp": "2026-09-20T10:06:00",
+        "service": "payment-service",
+        "response_time_ms": 640,
+        "cpu_percent": 94,
+        "memory_percent": 91,
+        "log_level": "ERROR",
+        "message": "Database connection timeout"
+    }
+    detector = AnomalyDetector()
+    topic = EventTopic("anomaly-events")
+    producer = EventProducer(topic)
+    consumer = EventConsumer(topic)
+
+    event = detector.detect(record)
+
+    assert event is not None
+    assert producer.publish(event) is True
+    assert topic.get_messages() == [event]
+
+    received_events = consumer.consume()
+
+    assert received_events == [event]
+    assert received_events[0]["timestamp"] == record["timestamp"]
+    assert received_events[0]["reasons"]
+
+    pipeline_result = run_pipeline(str(Path("data/service_data.json")))
+    downstream_events = pipeline_result["events_consumed"]
+
+    assert any(
+        downstream_event["timestamp"] == record["timestamp"]
+        for downstream_event in downstream_events
+    )
+
+
 def test_producer_publishes_event():
     topic = EventTopic("anomaly-events")
     producer = EventProducer(topic)
