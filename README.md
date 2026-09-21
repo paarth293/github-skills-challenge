@@ -11,6 +11,28 @@ Make sure your work is committed and pushed to your repository before submission
 
 Good luck!
 
+## Objective
+
+This assessment demonstrates a Python-based AIOps workflow that analyses payment-service operational data, identifies abnormal behavior, processes anomaly events, and produces a final AIOps result.
+
+## Task 1: Set Up and Understand the Environment
+
+The service being monitored is `payment-service`, which produces metrics and log information during payment processing. The operational problem is to identify unusual response time or resource usage and connect those findings to relevant timeout logs.
+
+The major repository components are:
+
+- `data/service_data.json`: synthetic operational records containing metrics, logs, timestamps, and service information.
+- `src/anomaly_detector.py`: checks metrics and log levels and creates anomaly events.
+- `src/event_producer.py`: publishes anomaly events.
+- `src/event_topic.py`: stores events in the in-memory topic.
+- `src/event_consumer.py`: receives events from the topic.
+- `src/aiops_pipeline.py`: loads the data, runs detection, connects the event components, and prints the final AIOps output.
+- `tests/`: validates detection, event streaming, the end-to-end workflow, and code coverage.
+
+The demonstrated workflow is:
+
+`Operational Data -> Anomaly Detection -> Event Generation -> Producer -> Topic -> Consumer -> AIOps Output`
+
 ## Task 2
 
 It has 10 payment records 
