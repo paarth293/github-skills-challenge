@@ -63,3 +63,55 @@ The complete anomaly-event flow was verified:
 ### Execution result
 
 Running `PYTHONPATH=src python3 src/aiops_pipeline.py` processed all 10 records, detected 2 anomalies, and consumed 2 events. The events at `2026-09-20T10:05:00` and `2026-09-20T10:06:00` travelled through the detector, producer, topic, and consumer and were present in the downstream pipeline result with their detection reasons.
+
+## Task 5: Investigate and Correct the Workflow
+
+>Issue 1: Error logs were not detected
+Affected component: `AnomalyDetector` in `src/anomaly_detector.py`.
+Cause: the log condition checked only for `WARNING`, while the operational data contains `ERROR` records at 10:05 and 10:06.
+Correction: the detector now treats both `WARNING` and `ERROR` as concerning log levels.
+Re-execution: the 10:05 and 10:06 records are flagged with `Error log detected`.
+Verification: the anomaly tests assert that an `ERROR` record includes the error-log reason, and the pipeline output reports both anomalies.
+
+>Issue 2: Published events were not reaching the consumer
+
+Affected components: `EventProducer`, `EventTopic`, `EventConsumer`, and `run_pipeline()`.
+Cause: the producer was connected to `service-events`, while the consumer was connected to a separate `anomaly-events` topic.
+Correction: the pipeline now creates one `anomaly-events` topic and passes that same topic to both the producer and consumer.
+Re-execution: the producer publishes the two detected anomaly events and the consumer receives both.
+Verification: the pipeline reports `Anomalies detected: 2` and `Events consumed: 2`; the end-to-end test also confirms that the published event appears in the consumer output and downstream pipeline result.
+
+>Final verification
+Run the workflow with:
+```bash
+PYTHONPATH=src python3 src/aiops_pipeline.py
+```
+The corrected execution processes 10 records, detects 2 anomalies, consumes 2 events, and prints the timestamp and reasons for each event. The full automated verification passes with:
+```bash
+python3 -m pytest -q
+```
+Result: `12 passed`.
+
+## Task 6: Execute the End-to-End Pipeline
+
+The corrected workflow was executed from the supplied operational data using:
+
+```bash
+PYTHONPATH=src python3 src/aiops_pipeline.py
+```
+
+The execution verified the complete path:
+
+`Operational Data -> Anomaly Detection -> Event -> Producer -> Topic -> Consumer -> AIOps`
+
+The final result was:
+
+```text
+Records processed: 10
+Anomalies detected: 2
+Events consumed: 2
+```
+
+The two final anomaly events identified the operational issue at `2026-09-20T10:05:00` and `2026-09-20T10:06:00`. The output included the affected service, timestamp, anomaly type, and detection reasons. This verifies that operational data was processed, abnormal behavior was detected, events were generated and published, the consumer received them, and the downstream AIOps result successfully represented the payment-service timeout and database connection timeout.
+
+The end-to-end test in `tests/test_aiops_pipeline.py` separately verifies event creation, producer publication, topic storage, consumer receipt, and presence in the downstream `events_consumed` result.
