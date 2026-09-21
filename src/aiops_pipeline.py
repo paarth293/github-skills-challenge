@@ -1,15 +1,9 @@
 import json
 
-try:
-    from .anomaly_detector import AnomalyDetector
-    from .event_consumer import EventConsumer
-    from .event_producer import EventProducer
-    from .event_topic import EventTopic
-except ImportError:
-    from anomaly_detector import AnomalyDetector
-    from event_consumer import EventConsumer
-    from event_producer import EventProducer
-    from event_topic import EventTopic
+from .anomaly_detector import AnomalyDetector
+from .event_consumer import EventConsumer
+from .event_producer import EventProducer
+from .event_topic import EventTopic
 
 
 def load_data(file_path):

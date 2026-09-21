@@ -62,7 +62,7 @@ The complete anomaly-event flow was verified:
 
 ### Execution result
 
-Running `PYTHONPATH=src python3 src/aiops_pipeline.py` processed all 10 records, detected 2 anomalies, and consumed 2 events. The events at `2026-09-20T10:05:00` and `2026-09-20T10:06:00` travelled through the detector, producer, topic, and consumer and were present in the downstream pipeline result with their detection reasons.
+Running `python3 -m src.aiops_pipeline` processed all 10 records, detected 2 anomalies, and consumed 2 events. The events at `2026-09-20T10:05:00` and `2026-09-20T10:06:00` travelled through the detector, producer, topic, and consumer and were present in the downstream pipeline result with their detection reasons.
 
 ## Task 5: Investigate and Correct the Workflow
 
@@ -84,7 +84,7 @@ Verification: the pipeline reports `Anomalies detected: 2` and `Events consumed:
 >Final verification
 Run the workflow with:
 ```bash
-PYTHONPATH=src python3 src/aiops_pipeline.py
+python3 -m src.aiops_pipeline
 ```
 The corrected execution processes 10 records, detects 2 anomalies, consumes 2 events, and prints the timestamp and reasons for each event. The full automated verification passes with:
 ```bash
@@ -97,7 +97,7 @@ Result: `12 passed`.
 The corrected workflow was executed from the supplied operational data using:
 
 ```bash
-PYTHONPATH=src python3 src/aiops_pipeline.py
+python3 -m src.aiops_pipeline
 ```
 
 The execution verified the complete path:
@@ -156,7 +156,7 @@ The final output identified the payment-service timeout at 10:05 and the databas
 
 7. Issues corrected
 
-The detector originally checked only `WARNING`, so it missed the dataset's `ERROR` log records. It was corrected to detect both `WARNING` and `ERROR`. The producer and consumer originally used different topics, so consumed events were empty. They were corrected to share the same `anomaly-events` topic. The package imports were also made compatible with both tests and direct CLI execution.
+The detector originally checked only `WARNING`, so it missed the dataset's `ERROR` log records. It was corrected to detect both `WARNING` and `ERROR`. The producer and consumer originally used different topics, so consumed events were empty. They were corrected to share the same `anomaly-events` topic. The package imports were standardized so the workflow runs with the package command used in the reproduction steps.
 
 8. Limitation and possible improvement
 
@@ -169,11 +169,11 @@ From the repository root, run:
 ```bash
 python3 -m pip install -r requirements.txt
 python3 -m pip install pytest-cov coverage
-PYTHONPATH=src python3 src/aiops_pipeline.py
+python3 -m src.aiops_pipeline
 PYTHONPATH=. python3 -m pytest --cov=src --cov-report=term-missing --cov-fail-under=90 -q
 ```
 
-The pipeline command displays the detected anomaly events. The test command runs all tests and verifies at least 90 percent code coverage. The current result is 18 passing tests and 91.89 percent coverage.
+The pipeline command displays the detected anomaly events. The test command runs all tests and verifies at least 90 percent code coverage. The current result is 18 passing tests and 100 percent coverage.
 
 ## Task 8: Run the Provided Validation
 
@@ -189,7 +189,7 @@ The provided validation was run after completing the implementation.
 Run the final workflow:
 
 ```bash
-PYTHONPATH=src python3 src/aiops_pipeline.py
+python3 -m src.aiops_pipeline
 ```
 
 Run the complete tests and coverage validation:
@@ -202,8 +202,8 @@ Validation result:
 
 ```text
 18 passed
-Required test coverage of 90% reached
-Total coverage: 91.89%
+Required test coverage of 100% reached
+Total coverage: 100.00%
 ```
 
 No validation failures remained before submission.
