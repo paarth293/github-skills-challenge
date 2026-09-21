@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from src.anomaly_detector import AnomalyDetector
-from src.aiops_pipeline import run_pipeline
+from src.aiops_pipeline import identify_metric_fields, run_pipeline
 from src.event_consumer import EventConsumer
 from src.event_producer import EventProducer
 from src.event_topic import EventTopic
@@ -21,6 +21,36 @@ def test_normal_record_is_not_anomaly():
     }
 
     assert detector.detect(record) is None
+
+
+def test_identify_metric_fields_from_records():
+    records = [
+        {
+            "timestamp": "2026-09-20T10:00:00",
+            "service": "payment-service",
+            "response_time_ms": 120,
+            "cpu_percent": 42,
+            "memory_percent": 51,
+            "log_level": "INFO",
+            "message": "Payment request processed successfully"
+        }
+    ]
+
+    assert identify_metric_fields(records) == [
+        "cpu_percent",
+        "memory_percent",
+        "response_time_ms"
+    ]
+
+
+def test_pipeline_reports_metric_fields():
+    result = run_pipeline(str(Path("data/service_data.json")))
+
+    assert result["metric_fields"] == [
+        "cpu_percent",
+        "memory_percent",
+        "response_time_ms"
+    ]
 
 
 def test_anomalous_record_is_detected():

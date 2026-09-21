@@ -11,6 +11,17 @@ def load_data(file_path):
         return json.load(file)
 
 
+def identify_metric_fields(records):
+    """Return fields containing numeric telemetry values."""
+    metric_fields = {
+        field
+        for record in records
+        for field, value in record.items()
+        if isinstance(value, (int, float)) and not isinstance(value, bool)
+    }
+    return sorted(metric_fields)
+
+
 def run_pipeline(file_path):
     data = load_data(file_path)
 
@@ -37,6 +48,7 @@ def run_pipeline(file_path):
 
     return {
         "records_processed": len(data),
+        "metric_fields": identify_metric_fields(data),
         "anomalies_detected": detected_events,
         "events_consumed": consumed_events
     }
@@ -50,6 +62,7 @@ if __name__ == "__main__":
     print("=" * 50)
 
     print(f"Records processed: {result['records_processed']}")
+    print(f"Metric fields: {', '.join(result['metric_fields'])}")
     print(f"Anomalies detected: {len(result['anomalies_detected'])}")
     print(f"Events consumed: {len(result['events_consumed'])}")
 
