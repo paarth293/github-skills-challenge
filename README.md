@@ -174,3 +174,66 @@ PYTHONPATH=. python3 -m pytest --cov=src --cov-report=term-missing --cov-fail-un
 ```
 
 The pipeline command displays the detected anomaly events. The test command runs all tests and verifies at least 90 percent code coverage. The current result is 18 passing tests and 91.89 percent coverage.
+
+## Task 8: Run the Provided Validation
+
+The provided validation was run after completing the implementation.
+
+1. Operational data processing: passed. The workflow processed 10 records from `data/service_data.json`.
+2. Anomaly detection: passed. The detector identified the two unusual records at 10:05 and 10:06.
+3. Anomaly event generation: passed. Both detected records produced anomaly events with timestamps, source data, and reasons.
+4. Event pipeline: passed. The producer published both events to the shared `anomaly-events` topic.
+5. Consumer processing: passed. The consumer received both published events.
+6. Final AIOps workflow: passed. The final output reported 2 anomalies and 2 consumed events.
+
+Run the final workflow:
+
+```bash
+PYTHONPATH=src python3 src/aiops_pipeline.py
+```
+
+Run the complete tests and coverage validation:
+
+```bash
+PYTHONPATH=. python3 -m pytest --cov=src --cov-report=term-missing --cov-fail-under=90 -q
+```
+
+Validation result:
+
+```text
+18 passed
+Required test coverage of 90% reached
+Total coverage: 91.89%
+```
+
+No validation failures remained before submission.
+
+## Task 9: Commit and Push Changes
+
+The modified files were reviewed before submission. Only files related to the assessment were included:
+
+- `README.md`
+- `src/aiops_pipeline.py`
+- `src/anomaly_detector.py`
+- `src/event_consumer.py`
+- `src/event_producer.py`
+- `tests/calculations_test.py`
+- `tests/test_aiops_pipeline.py`
+
+The changes were committed with meaningful task-specific commit messages. The final README update can be committed with:
+
+```bash
+git add README.md
+git commit -m "Document final validation and submission steps"
+git push origin main
+```
+
+Confirm the submission after pushing:
+
+```bash
+git status
+git log -1 --oneline
+git ls-remote origin refs/heads/main
+```
+
+The latest commit hash shown by `git log` should match the `main` hash returned by `git ls-remote`.
